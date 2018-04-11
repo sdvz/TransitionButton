@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 /**
-Stop animation style of the `TransitionButton`.
+ Stop animation style of the `TransitionButton`.
  
  - normal: just revert the button to the original state.
  - expand: expand the button and cover all the screen, useful to do transit animation.
@@ -26,7 +26,7 @@ public enum StopAnimationStyle {
 
 
 /// UIButton sublass for loading and transition animation. Useful for network based application or where you need to animate an action button while doing background tasks.
- 
+
 open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, CAAnimationDelegate {
     
     /// the color of the spinner while animating the button
@@ -93,8 +93,8 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
         self.cachedTitle            = title(for: .normal)  // cache title before animation of spiner
         self.cachedImage            = image(for: .normal)  // cache image before animation of spiner
         
-        self.setTitle("",  for: .normal)                    // place an empty string as title to display a spiner
-        self.setImage(nil, for: .normal)                    // remove the image, if any, before displaying the spinner
+        self.setTitle("", updateCachedValue: false, for: .normal)                    // place an empty string as title to display a spiner
+        self.setImage(nil, updateCachedValue: false, for: .normal)                    // remove the image, if any, before displaying the spinner
         
         UIView.animate(withDuration: 0.1, animations: { () -> Void in
             self.layer.cornerRadius = self.frame.height / 2 // corner radius should be half the height to have a circle corners
@@ -134,6 +134,30 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
         }
     }
     
+    open override func setTitle(_ title: String?, for state: UIControlState) {
+        setTitle(title, updateCachedValue: true, for: state)
+    }
+    
+    open override func setImage(_ image: UIImage?, for state: UIControlState) {
+        setImage(image, updateCachedValue: true, for: state)
+    }
+    
+    open func setTitle(_ title: String?, updateCachedValue: Bool, for state: UIControlState) {
+        super.setTitle(title, for: state)
+        
+        if updateCachedValue {
+            cachedTitle = title
+        }
+    }
+    
+    open func setImage(_ image: UIImage?, updateCachedValue: Bool, for state: UIControlState) {
+        super.setImage(image, for: state)
+        
+        if updateCachedValue {
+            cachedImage = image
+        }
+    }
+    
     private func shakeAnimation() {
         let keyFrame = CAKeyframeAnimation(keyPath: "position")
         let point = self.layer.position
@@ -160,7 +184,7 @@ open class TransitionButton : UIButton, UIViewControllerTransitioningDelegate, C
         self.isUserInteractionEnabled = true // enable again the user interaction
         self.layer.cornerRadius = self.cornerRadius
     }
- 
+    
     private func animateToOriginalWidth() {
         let shrinkAnim = CABasicAnimation(keyPath: "bounds.size.width")
         shrinkAnim.fromValue = (self.bounds.height)
@@ -223,6 +247,4 @@ public extension UIImage {
         self.init(cgImage: cgImage)
     }
 }
-
-
 
